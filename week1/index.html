@@ -4,7 +4,7 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div>Number Guessing Game in HTML</div>
+<h1>Number Guessing Game in HTML</h1>
 <div class="input_value">
     <input type="number" id="number" autofocus/>
     <button id="guessButton">Guess</button>
@@ -32,8 +32,8 @@
             window.location.reload(false);
         else {
             const userInput = parseInt(number.value)
-            if(!isNaN(userInput)){
-                if(limitGuess != 0){
+            if(limitGuess != 0){
+                if(!isNaN(userInput)){
                     limitGuess--;
                     history.innerHTML = (10 - limitGuess)+"/ You guess is "+ userInput+'<br>' + history.innerHTML
                     if(userInput > expected){
@@ -53,13 +53,14 @@
                     }
                     number.value =  "";
                     number.focus();
-                }else{
-                    button.innerHTML = "Reload";
-                    isCorrect = true;
-                    alert('You have no time to guess. Please click reload to start the new game.')
+                
+                } else {
+                    alert('Your input is empty. Please input a number!')
                 }
-            } else {
-                alert('Your input is empty. Please input a number!')
+            }else{
+                button.innerHTML = "Reload";
+                isCorrect = true;
+                alert('You have no time to guess. Please click reload to start the new game.')
             }
         }
         

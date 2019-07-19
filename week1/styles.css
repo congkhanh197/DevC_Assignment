@@ -4,6 +4,10 @@ body {
     box-sizing: inherit;
     
 }
+h1{
+    margin: 10px;
+    align-self: center;
+}
 div{
     margin: 10px;
     align-self: center;
