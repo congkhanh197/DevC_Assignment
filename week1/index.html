@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div>Number Guessing Game in HTML</div>
+<div class="input_value">
+    <input type="number" id="number" autofocus/>
+    <button id="guessButton">Guess</button>
+</div>
+<div id ="message"></div>
+<div id = "guess_history"></div>
+<script>
+	let button = document.getElementById("guessButton")
+    let number = document.getElementById("number")
+    let history = document.getElementById('guess_history')
+    let message = document.getElementById('message')
+    let limitGuess = 10;
+    let isCorrect = false;
+    button.addEventListener("click", displayMessage)
+    number.addEventListener('keyup', function (event) {
+        if (event.keyCode === 13) {
+            displayMessage()
+        }
+    });
+    const expected = Math.round(Math.random()*10)
+    console.log("Expected value: ", expected)
+    
+    function displayMessage(){
+        if(isCorrect)
+            window.location.reload(false);
+        else {
+            const userInput = parseInt(number.value)
+            if(!isNaN(userInput)){
+                if(limitGuess != 0){
+                    limitGuess--;
+                    history.innerHTML = (10 - limitGuess)+"/ You guess is "+ userInput+'<br>' + history.innerHTML
+                    if(userInput > expected){
+                        message.innerHTML = "Sorry your guess is to high, guess lower. You have "+limitGuess+ " guesses left."
+                        message.style.backgroundColor='red'
+                    }
+                    else {
+                        if(userInput < expected) {
+                            message.innerHTML = "Sorry your guess is to low, guess higher. You have "+limitGuess+ " guesses left."
+                            message.style.backgroundColor='red'
+                        } else {
+                            message.innerHTML = "Congratulations! You guessed correctly. Please click reload!"
+                            message.style.backgroundColor='green'
+                            isCorrect = true;
+                            button.innerHTML = "Reload";
+                        }        
+                    }
+                    number.value =  "";
+                    number.focus();
+                }else{
+                    button.innerHTML = "Reload";
+                    isCorrect = true;
+                    alert('You have no time to guess. Please click reload to start the new game.')
+                }
+            } else {
+                alert('Your input is empty. Please input a number!')
+            }
+        }
+        
+    }
+</script>
+</body>
+</html>

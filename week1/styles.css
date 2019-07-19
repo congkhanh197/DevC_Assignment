@@ -1,0 +1,10 @@
+body {
+    display: flex;
+    flex-direction: column;
+    box-sizing: inherit;
+    
+}
+div{
+    margin: 10px;
+    align-self: center;
+}
