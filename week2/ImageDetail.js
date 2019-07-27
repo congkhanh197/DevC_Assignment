@@ -18,10 +18,17 @@ export class ImageDetail extends PureComponent {
   constructor(props) {
     super(props);
     this.openItem = props.navigation.getParam("item", null);
+    this.state = {
+      isLike: false
+    };
   }
   _getHeightImg = (img, newWidth) => {
     const imgProps = Image.resolveAssetSource(img);
     return (newWidth * imgProps.height) / imgProps.width;
+  };
+  _onPressLike = () => this.setState({ isLike: !this.state.isLike });
+  _onPressDownload = () => {
+    alert("Press download");
   };
   _renderImage = () => (
     <View style={styles.imgWrapper}>
@@ -37,7 +44,6 @@ export class ImageDetail extends PureComponent {
     </View>
   );
   render() {
-    console.log(this.openItem);
     return (
       <View style={styles.container}>
         <ScrollView
@@ -53,7 +59,10 @@ export class ImageDetail extends PureComponent {
                 <Text style={styles.textAddress}>Paris, Franch</Text>
               </View>
             </View>
-            <TouchableOpacity style={styles.btnDownload}>
+            <TouchableOpacity
+              onPress={this._onPressDownload}
+              style={[styles.shallowBtn, styles.btnDownload]}
+            >
               <Ionicons name="ios-cloud-download" color="white" size={30} />
             </TouchableOpacity>
           </View>
@@ -75,8 +84,12 @@ export class ImageDetail extends PureComponent {
           </View>
           <View style={styles.reactSession}>
             <View style={styles.reactWrapper}>
-              <TouchableOpacity>
-                <Ionicons name="ios-heart" size={30} color="gray" />
+              <TouchableOpacity onPress={this._onPressLike}>
+                <Ionicons
+                  name="ios-heart"
+                  size={30}
+                  color={this.state.isLike ? "red" : "gray"}
+                />
               </TouchableOpacity>
               <TouchableOpacity>
                 <Ionicons name="ios-chatbubbles" size={30} color="gray" />
@@ -193,6 +206,17 @@ const styles = StyleSheet.create({
   image: {
     width: viewWidth,
     resizeMode: "contain"
+  },
+  shallowBtn: {
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 5
+    },
+    shadowOpacity: 0.36,
+    shadowRadius: 6.68,
+
+    elevation: 11
   }
 });
 
