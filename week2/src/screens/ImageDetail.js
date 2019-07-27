@@ -9,11 +9,13 @@ import {
   StyleSheet
 } from "react-native";
 import Constants from "expo-constants";
-import { Ionicons, Entypo, EvilIcons, AntDesign } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
+import { Header, BottomTab, ImageScale } from "../components";
+
 const viewWidth = Dimensions.get("window").width;
-const POLO_BLUE_COLOR = "rgb(51,60,87)";
 const FOLLOW_COLOR = "rgb(71,113,246)";
-const SEND_MESSAGE_COLOR = "rgb(120,213,250)";
+const hashtag = ["#photography", "#sea", "#car", "#DevC", "#facebook", "#CoderSchool"];
+
 export class ImageDetail extends PureComponent {
   constructor(props) {
     super(props);
@@ -32,20 +34,18 @@ export class ImageDetail extends PureComponent {
   };
   _renderImage = () => (
     <View style={styles.imgWrapper}>
-      <Image
-        source={this.openItem.imgSource}
-        style={[
-          {
-            height: this._getHeightImg(this.openItem.imgSource, viewWidth)
-          },
-          styles.image
-        ]}
-      />
+      <ImageScale source={this.openItem.imgSource} width={viewWidth} />
     </View>
   );
   render() {
     return (
       <View style={styles.container}>
+        <Header
+          color="white"
+          transparent={true}
+          onPressBack={() => this.props.navigation.navigate("Profile")}
+          onPressFilter={() => alert("Press filter")}
+        />
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContainer}
@@ -74,13 +74,11 @@ export class ImageDetail extends PureComponent {
             aliquip ex ea commodo consequat.
           </Text>
           <View style={styles.tagSession}>
-            {["#photography", "#sea", "test", "tes1t", "tes2t", "test1"].map(
-              item => (
-                <Text key={item} style={styles.tagTitle}>
-                  {item}
-                </Text>
-              )
-            )}
+            {hashtag.map(item => (
+              <Text key={item} style={styles.tagTitle}>
+                {item}
+              </Text>
+            ))}
           </View>
           <View style={styles.reactSession}>
             <View style={styles.reactWrapper}>
@@ -100,25 +98,7 @@ export class ImageDetail extends PureComponent {
             </TouchableOpacity>
           </View>
         </ScrollView>
-        <View style={styles.tabBottom}>
-          <AntDesign name="home" color="gray" size={28} />
-          <Ionicons name="ios-add-circle-outline" color="gray" size={30} />
-          <EvilIcons name="user" color="gray" size={38} />
-        </View>
-
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => {
-              this.props.navigation.goBack();
-            }}
-            style={styles.headerBtnWrapper}
-          >
-            <Ionicons name="md-arrow-back" color="white" size={30} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.headerBtnWrapper}>
-            <Entypo name="dots-three-horizontal" color="white" size={30} />
-          </TouchableOpacity>
-        </View>
+        <BottomTab />
       </View>
     );
   }
@@ -177,35 +157,10 @@ const styles = StyleSheet.create({
     width: 68,
     justifyContent: "space-between"
   },
-  tabBottom: {
-    paddingHorizontal: 30,
-    height: 50,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-evenly"
-  },
-  header: {
-    position: "absolute",
-    width: "100%",
-    marginTop: 15,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 15
-  },
-  headerBtnWrapper: {
-    width: 40,
-    height: 40,
-    justifyContent: "center",
-    alignItems: "center"
-  },
   imgWrapper: {
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
     overflow: "hidden"
-  },
-  image: {
-    width: viewWidth,
-    resizeMode: "contain"
   },
   shallowBtn: {
     shadowColor: "#000",
