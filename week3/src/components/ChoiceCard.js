@@ -3,13 +3,13 @@ import { View, Text, Image, StyleSheet } from "react-native";
 
 import { convertUpperFirst } from "../utils";
 
-const ChoiceCard = ({ player, choice: { uri, name } }) => {
+const ChoiceCard = ({ player, choice: { name, image } }) => {
   const title = name && name.charAt(0).toUpperCase() + name.slice(1);
 
   return (
     <View style={styles.choiceContainer}>
       <Text style={styles.choiceDescription}>{player}</Text>
-      <Image source={{ uri }} resizeMode="contain" style={styles.choiceImage} />
+      <Image source={image} resizeMode="contain" style={styles.choiceImage} />
       <Text style={styles.choiceCardTitle}>{title}</Text>
     </View>
   );
