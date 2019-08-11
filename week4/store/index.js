@@ -42,7 +42,7 @@ const rootReducer = (state = initialState, action) => {
       };
     case TOGGLE_TODO:
       let todo = state.todoList.find(todo => todo.id === action.todoId);
-      console.log(todo)
+      console.log(todo);
       todo.status = todo.status === "Done" ? "Active" : "Done";
       const foundIndex = state.todoList.findIndex(
         todo => todo.id === action.todoId

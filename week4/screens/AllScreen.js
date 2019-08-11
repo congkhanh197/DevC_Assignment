@@ -2,28 +2,25 @@ import React, { Component } from "react";
 import {
   Text,
   View,
-  Alert,
   StyleSheet,
   TouchableOpacity,
   TextInput,
   ScrollView,
   ImageBackground,
-  KeyboardAvoidingView,
   Keyboard
 } from "react-native";
-import { addTodo, removeTodo, toggleTodo } from "../store";
-// import { TODOS } from "../utils/data.js";
-
+import GestureRecognizer from "react-native-swipe-gestures";
 import Constants from "expo-constants";
 import { connect } from "react-redux";
-
+import { addTodo, removeTodo, toggleTodo } from "../store";
 import TodoItem from "./TodoItem";
 
 class AllScreen extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      todoBody: ""
+      todoBody: "",
+      isHideView: false
     };
   }
 
@@ -65,6 +62,7 @@ class AllScreen extends Component {
       });
     }, 500);
   };
+
   onSubmitTodo = () => {
     if (this.state.todoBody) {
       this.setTodoBody("");
@@ -73,56 +71,75 @@ class AllScreen extends Component {
     }
   };
 
+  onToggleView = () => {
+    this.setState({ isHideView: !this.state.isHideView });
+  };
   render() {
+    const config = {
+      velocityThreshold: 0.3,
+      directionalOffsetThreshold: 80
+    };
     return (
-      <ImageBackground
-        style={[styles.container, { marginBottom: this.state.marginKeyboard }]}
-        source={require("../assets/images/background.png")}
+      <GestureRecognizer
+        onSwipeLeft={this.onToggleView}
+        onSwipeRight={this.onToggleView}
+        config={config}
+        style={{
+          flex: 1
+        }}
       >
-        {/* <KeyboardAvoidingView enabled behavior="padding" style={{}}> */}
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          style={styles.scrollView}
-          contentContainerStyle={{
-            alignItems: "center",
-            backgroundColor: "rgba(0,0,0,0.3)",
-            borderRadius: 20
-          }}
+        <ImageBackground
+          style={[
+            styles.container,
+            { marginBottom: this.state.marginKeyboard }
+          ]}
+          source={require("../assets/images/background.png")}
         >
-          <Text
-            style={{
-              color: "white",
-              textAlign: "center",
-              fontSize: 20,
-              fontWeight: "bold",
-              marginVertical: 5
-            }}
-          >
-            Todo List ({this.props.todoList.length})
-          </Text>
-          {this.props.todoList.map((todo, idx) => {
-            return (
-              <TodoItem
-                idx={idx}
-                todo={todo}
-                key={todo.body}
-                onToggleTodo={this.onToggleTodo}
-                onDeleteTodo={this.props.onDeleteTodo}
-              />
-            );
-          })}
-        </ScrollView>
-        <View style={styles.inputContainer}>
-          <TextInput
-            value={this.state.todoBody}
-            style={styles.todoInput}
-            onChangeText={text => this.setTodoBody(text)}
-          />
-          <TouchableOpacity style={styles.button} onPress={this.onSubmitTodo}>
-            <Text style={styles.buttonText}>Submit</Text>
-          </TouchableOpacity>
-        </View>
-      </ImageBackground>
+          {this.state.isHideView ? (
+            <View style={styles.container} />
+          ) : (
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              style={styles.scrollView}
+              contentContainerStyle={styles.contentScrollView}
+            >
+              <Text>{this.state.myText}</Text>
+              <Text
+                style={{
+                  color: "white",
+                  textAlign: "center",
+                  fontSize: 20,
+                  fontWeight: "bold",
+                  marginVertical: 5
+                }}
+              >
+                Todo List ({this.props.todoList.length})
+              </Text>
+              {this.props.todoList.map((todo, idx) => {
+                return (
+                  <TodoItem
+                    idx={idx}
+                    todo={todo}
+                    key={todo.body}
+                    onToggleTodo={this.onToggleTodo}
+                    onDeleteTodo={this.props.onDeleteTodo}
+                  />
+                );
+              })}
+            </ScrollView>
+          )}
+          <View style={styles.inputContainer}>
+            <TextInput
+              value={this.state.todoBody}
+              style={styles.todoInput}
+              onChangeText={text => this.setTodoBody(text)}
+            />
+            <TouchableOpacity style={styles.button} onPress={this.onSubmitTodo}>
+              <Text style={styles.buttonText}>Submit</Text>
+            </TouchableOpacity>
+          </View>
+        </ImageBackground>
+      </GestureRecognizer>
     );
   }
 }
@@ -131,12 +148,9 @@ AllScreen.navigationOptions = {
   header: null
 };
 
-const mapStateToProps = state => {
-  // console.log(state);
-  return {
-    todoList: state.todoList
-  };
-};
+const mapStateToProps = state => ({
+  todoList: state.todoList
+});
 const mapDispatchToProps = dispatch => ({
   onAddTodo: todoBody => dispatch(addTodo(todoBody)),
   onDeleteTodo: todoId => dispatch(removeTodo(todoId)),
@@ -190,5 +204,10 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
     marginTop: 20
+  },
+  contentScrollView: {
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.3)",
+    borderRadius: 20
   }
 });
