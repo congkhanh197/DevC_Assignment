@@ -14,7 +14,7 @@ const SingleTodoScreen = props => {
 };
 
 SingleTodoScreen.navigationOptions = {
-  title: "SingleTodoScreen"
+  title: "Todo Detail"
 };
 
 export default SingleTodoScreen;
@@ -32,6 +32,9 @@ const styles = StyleSheet.create({
     fontSize: 30
   },
   bodyText: {
-    fontSize: 50
+    textAlign: "center",
+    marginTop: 20,
+    fontSize: 50,
+    marginHorizontal: 15
   }
 });

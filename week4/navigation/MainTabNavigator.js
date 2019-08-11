@@ -28,7 +28,7 @@ CompleteStack.navigationOptions = {
   tabBarIcon: ({ focused }) => (
     <TabBarIcon
       focused={focused}
-      name={Platform.OS === "ios" ? "ios-done-all" : "md-link"}
+      name={Platform.OS === "ios" ? "ios-done-all" : "md-done-all"}
     />
   )
 };
@@ -48,7 +48,11 @@ AllStack.navigationOptions = {
   tabBarIcon: ({ focused }) => (
     <TabBarIcon
       focused={focused}
-      name={Platform.OS === "ios" ? "ios-link" : "md-link"}
+      name={
+        Platform.OS === "ios"
+          ? "ios-add-circle-outline"
+          : "md-add-circle-outline"
+      }
     />
   )
 };
@@ -67,7 +71,7 @@ ActiveStack.navigationOptions = {
   tabBarIcon: ({ focused }) => (
     <TabBarIcon
       focused={focused}
-      name={Platform.OS === "ios" ? "ios-options" : "md-options"}
+      name={Platform.OS === "ios" ? "ios-clipboard" : "md-clipboard"}
     />
   )
 };
@@ -81,7 +85,8 @@ const tabNavigator = createBottomTabNavigator(
     ActiveStack
   },
   {
-    initialRouteName: "AllStack"
+    initialRouteName: "AllStack",
+    keyboardHidesTabBar: true
   }
 );
 

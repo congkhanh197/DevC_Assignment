@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { Component } from "react";
 import {
   Text,
   View,
@@ -8,168 +8,187 @@ import {
   TextInput,
   ScrollView,
   ImageBackground,
-  KeyboardAvoidingView
+  KeyboardAvoidingView,
+  Keyboard
 } from "react-native";
-import { TODOS } from "../utils/data.js";
+import { addTodo, removeTodo, toggleTodo } from "../store";
+// import { TODOS } from "../utils/data.js";
 
-const TodoItem = props => {
-  const statusStyle = {
-    backgroundColor: props.todo.status === "Done" ? "blue" : "green"
-  };
-  const onLongPress = todo => {
-    const prompt = `"${todo.body}"`;
-    Alert.alert(
-      "Delete your todo?",
-      prompt,
-      [
-        {
-          text: "Cancel",
-          onPress: () => console.log("Cancel Pressed"),
-          style: "cancel"
-        },
-        { text: "OK", onPress: () => props.onDeleteTodo(todo.id) }
-      ],
-      { cancelable: true }
-    );
-  };
-  return (
-    <TouchableOpacity
-      key={props.todo.body}
-      style={[styles.todoItem, statusStyle]}
-      onPress={() => props.onToggleTodo(props.todo.id)}
-      onLongPress={() => onLongPress(props.todo)}
-    >
-      <Text style={styles.todoText}>
-        {props.idx + 1}: {props.todo.body}
-      </Text>
-    </TouchableOpacity>
-  );
-};
+import Constants from "expo-constants";
+import { connect } from "react-redux";
 
-export default function AllScreen() {
-  const [todoList, setTodoList] = useState(TODOS);
-  const [todoBody, setTodoBody] = useState("");
-  const onToggleTodo = id => {
-    const todo = todoList.find(todo => todo.id === id);
-    todo.status = todo.status === "Done" ? "Active" : "Done";
-    const foundIndex = todoList.findIndex(todo => todo.id === id);
-    todoList[foundIndex] = todo;
-    const newTodoList = [...todoList];
-    setTodoList(newTodoList);
-    setTimeout(() => {
-      props.navigation.navigate("SingleTodo", {
-        updatedTodo: todo
-      });
-    }, 1000);
-  };
-  const onDeleteTodo = id => {
-    const newTodoList = todoList.filter(todo => todo.id !== id);
-    setTodoList(newTodoList);
-  };
-  const onSubmitTodo = () => {
-    const newTodo = {
-      body: todoBody,
-      status: "Active",
-      id: todoList.length + 1
+import TodoItem from "./TodoItem";
+
+class AllScreen extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      todoBody: ""
     };
-    const newTodoList = [...todoList, newTodo];
-    setTodoList(newTodoList);
-    setTodoBody("");
+  }
+
+  setTodoBody = todoBody => {
+    this.setState({ todoBody });
   };
-  return (
-    <ImageBackground
-      style={styles.container}
-      source={require("../assets/images/splash.png")}
-    >
-      <KeyboardAvoidingView enabled behavior="padding" style={{}}>
-        <ScrollView style={{}}>
-          <View style={styles.container}>
-            {todoList.map((todo, idx) => {
-              return (
-                <TodoItem
-                  idx={idx}
-                  todo={todo}
-                  key={todo.body}
-                  onToggleTodo={onToggleTodo}
-                  onDeleteTodo={onDeleteTodo}
-                />
-              );
-            })}
-            <View style={styles.inputContainer}>
-              <TextInput
-                value={todoBody}
-                style={styles.todoInput}
-                onChangeText={text => setTodoBody(text)}
+
+  componentWillMount() {
+    this.keyboardDidShowListener = Keyboard.addListener(
+      "keyboardDidShow",
+      this.keyboardDidShow
+    );
+    this.keyboardDidHideListener = Keyboard.addListener(
+      "keyboardDidHide",
+      this.keyboardDidHide
+    );
+  }
+
+  componentWillUnmount() {
+    this.keyboardDidShowListener.remove();
+    this.keyboardDidHideListener.remove();
+  }
+  keyboardDidShow = e => {
+    this.setState({
+      marginKeyboard: e.endCoordinates.height - 49
+    });
+  };
+
+  keyboardDidHide = e => {
+    this.setState({
+      marginKeyboard: 0
+    });
+  };
+  onToggleTodo = id => {
+    this.props.onToggleTodo(id);
+    setTimeout(() => {
+      this.props.navigation.navigate("SingleTodo", {
+        updatedTodo: this.props.todoList.find(todo => todo.id === id)
+      });
+    }, 500);
+  };
+  onSubmitTodo = () => {
+    if (this.state.todoBody) {
+      this.setTodoBody("");
+      this.props.onAddTodo(this.state.todoBody);
+      Keyboard.dismiss();
+    }
+  };
+
+  render() {
+    return (
+      <ImageBackground
+        style={[styles.container, { marginBottom: this.state.marginKeyboard }]}
+        source={require("../assets/images/background.png")}
+      >
+        {/* <KeyboardAvoidingView enabled behavior="padding" style={{}}> */}
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          style={styles.scrollView}
+          contentContainerStyle={{
+            alignItems: "center",
+            backgroundColor: "rgba(0,0,0,0.3)",
+            borderRadius: 20
+          }}
+        >
+          <Text
+            style={{
+              color: "white",
+              textAlign: "center",
+              fontSize: 20,
+              fontWeight: "bold",
+              marginVertical: 5
+            }}
+          >
+            Todo List ({this.props.todoList.length})
+          </Text>
+          {this.props.todoList.map((todo, idx) => {
+            return (
+              <TodoItem
+                idx={idx}
+                todo={todo}
+                key={todo.body}
+                onToggleTodo={this.onToggleTodo}
+                onDeleteTodo={this.props.onDeleteTodo}
               />
-              <TouchableOpacity style={styles.button} onPress={onSubmitTodo}>
-                <Text style={styles.buttonText}>Submit</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+            );
+          })}
         </ScrollView>
-      </KeyboardAvoidingView>
-    </ImageBackground>
-  );
+        <View style={styles.inputContainer}>
+          <TextInput
+            value={this.state.todoBody}
+            style={styles.todoInput}
+            onChangeText={text => this.setTodoBody(text)}
+          />
+          <TouchableOpacity style={styles.button} onPress={this.onSubmitTodo}>
+            <Text style={styles.buttonText}>Submit</Text>
+          </TouchableOpacity>
+        </View>
+      </ImageBackground>
+    );
+  }
 }
 
 AllScreen.navigationOptions = {
-  title: "All Todos"
+  header: null
 };
+
+const mapStateToProps = state => {
+  // console.log(state);
+  return {
+    todoList: state.todoList
+  };
+};
+const mapDispatchToProps = dispatch => ({
+  onAddTodo: todoBody => dispatch(addTodo(todoBody)),
+  onDeleteTodo: todoId => dispatch(removeTodo(todoId)),
+  onToggleTodo: todoId => dispatch(toggleTodo(todoId))
+});
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(AllScreen);
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: "center",
-    backgroundColor: "#fff",
-    backgroundColor: "black",
-    justifyContent: "center"
-  },
-  todoItem: {
-    margin: 5,
-    padding: 10,
-    minHeight: 50,
-    width: "95%",
-    color: "white",
-    borderRadius: 5,
-    flexWrap: "wrap"
-  },
-  todoText: {
-    fontSize: 20,
-    color: "white",
-    fontWeight: "bold"
-  },
-  todoInput: {
-    width: "95%",
-    minHeight: 30,
-    color: "white",
-    borderWidth: 1,
-    marginTop: "20%",
-    marginBottom: "5%",
-    borderColor: "grey"
-  },
-  inputContainer: {
-    flex: 1,
-    width: "90%",
-    marginTop: 20,
-    marginBottom: "10%",
+    paddingTop: Constants.statusBarHeight,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 100
+    backgroundColor: "white"
+  },
+  inputContainer: {
+    width: "100%",
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    backgroundColor: "rgba(0,0,0,0.1)",
+    marginHorizontal: "5%",
+    alignItems: "center"
+  },
+  todoInput: {
+    marginVertical: 10,
+    width: "95%",
+    minHeight: 30,
+    borderWidth: 1,
+    borderColor: "grey",
+    borderRadius: 10,
+    paddingHorizontal: 10
   },
   button: {
-    height: 50,
-    width: "50%",
-    borderRadius: 10,
+    height: 30,
+    width: "80%",
+    marginBottom: 10,
+    borderRadius: 20,
     alignItems: "center",
-    backgroundColor: "blue",
+    backgroundColor: "lightseagreen",
     justifyContent: "center"
   },
   buttonText: {
     color: "white",
-    fontWeight: "bold"
+    fontWeight: "bold",
+    fontSize: 16
   },
   scrollView: {
     flex: 1,
-    paddingTop: 1000
+    marginTop: 20
   }
 });
