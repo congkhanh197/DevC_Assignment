@@ -17,15 +17,7 @@ function CompleteScreen(props) {
         {props.todoList
           .filter(todo => todo.status == "Done")
           .map((todo, idx) => {
-            return (
-              <TodoItem
-                idx={idx}
-                todo={todo}
-                key={todo.body}
-                onToggleTodo={() => {}}
-                onDeleteTodo={() => {}}
-              />
-            );
+            return <TodoItem idx={idx} todo={todo} key={todo.body} />;
           })}
       </ScrollView>
     </ImageBackground>
@@ -35,7 +27,7 @@ function CompleteScreen(props) {
 CompleteScreen.navigationOptions = {
   title: "Complete",
   headerTitleStyle: {
-    color: "white",
+    color: "gray",
     textAlign: "center",
     alignSelf: "center",
     width: "90%"

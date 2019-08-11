@@ -103,7 +103,6 @@ class AllScreen extends Component {
               style={styles.scrollView}
               contentContainerStyle={styles.contentScrollView}
             >
-              <Text>{this.state.myText}</Text>
               <Text
                 style={{
                   color: "white",

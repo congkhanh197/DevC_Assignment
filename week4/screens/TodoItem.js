@@ -6,26 +6,30 @@ const TodoItem = props => {
     backgroundColor: props.todo.status === "Done" ? "lightgrey" : "seagreen"
   };
   const onLongPress = (todo, onDeleteTodo) => {
-    const prompt = `"${todo.body}"`;
-    Alert.alert(
-      "Delete your todo?",
-      prompt,
-      [
-        {
-          text: "Cancel",
-          onPress: () => console.log("Cancel Pressed"),
-          style: "cancel"
-        },
-        { text: "OK", onPress: () => onDeleteTodo(todo.id) }
-      ],
-      { cancelable: true }
-    );
+    if (onDeleteTodo) {
+      const prompt = `"${todo.body}"`;
+      Alert.alert(
+        "Delete your todo?",
+        prompt,
+        [
+          {
+            text: "Cancel",
+            onPress: () => console.log("Cancel Pressed"),
+            style: "cancel"
+          },
+          { text: "OK", onPress: () => onDeleteTodo(todo.id) }
+        ],
+        { cancelable: true }
+      );
+    }
   };
   return (
     <TouchableOpacity
       key={props.todo.body}
       style={[styles.todoItem, statusStyle]}
-      onPress={() => props.onToggleTodo(props.todo.id)}
+      onPress={
+        props.onToggleTodo ? () => props.onToggleTodo(props.todo.id) : () => {}
+      }
       onLongPress={() => onLongPress(props.todo, props.onDeleteTodo)}
     >
       <View

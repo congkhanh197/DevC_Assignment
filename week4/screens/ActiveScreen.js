@@ -18,15 +18,7 @@ function ActiveScreen(props) {
           {props.todoList
             .filter(todo => todo.status === "Active")
             .map((todo, idx) => {
-              return (
-                <TodoItem
-                  idx={idx}
-                  todo={todo}
-                  key={todo.body}
-                  onToggleTodo={() => {}}
-                  onDeleteTodo={() => {}}
-                />
-              );
+              return <TodoItem idx={idx} todo={todo} key={todo.body} />;
             })}
         </View>
       </ScrollView>
