@@ -1,164 +1,62 @@
-import React, { useState, useEffect } from "react";
-import {
-  StyleSheet,
-  Text,
-  View,
-  ActivityIndicator,
-  FlatList,
-  Linking
-} from "react-native";
-import moment from "moment";
-import { Card, Button, Icon } from "react-native-elements";
+import { AppLoading } from 'expo';
+import { Asset } from 'expo-asset';
+import * as Font from 'expo-font';
+import React, { useState } from 'react';
+import { Platform, StatusBar, StyleSheet, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
-const filterForUniqueArticles = arr => {
-  const cleaned = [];
-  arr.forEach(itm => {
-    let unique = true;
-    cleaned.forEach(itm2 => {
-      const isEqual = JSON.stringify(itm) === JSON.stringify(itm2);
-      if (isEqual) unique = false;
-    });
-    if (unique) cleaned.push(itm);
-  });
-  return cleaned;
-};
+import AppNavigator from './navigation/AppNavigator';
 
-export default function App() {
-  const [loading, setLoading] = useState(true);
-  const [articles, setArticles] = useState([]);
-  const [pageNumber, setPageNumber] = useState(1);
-  const [hasErrored, setHasApiError] = useState(false);
-  const [lastPageReached, setLastPageReached] = useState(false);
+export default function App(props) {
+  const [isLoadingComplete, setLoadingComplete] = useState(false);
 
-  const getNews = async () => {
-    setLoading(true);
-    if (lastPageReached) return;
-    try {
-      const response = await fetch(
-        `https://newsapi.org/v2/top-headlines?country=us&apiKey=eb379170b18843d3a703032cd43e227d&page=${pageNumber}&pageSize=10`
-      );
-      const jsonData = await response.json();
-      const hasMoreArticles = jsonData.articles.length > 0;
-      if (hasMoreArticles) {
-        const newArticleList = filterForUniqueArticles(
-          articles.concat(jsonData.articles)
-        );
-        setArticles(newArticleList);
-        setPageNumber(pageNumber + 1);
-      } else {
-        setLastPageReached(true);
-      }
-    } catch (error) {
-      setHasApiError(true);
-    }
-    setLoading(false);
-  };
-  useEffect(() => {
-    getNews();
-  }, [articles]);
-  const onPress = url => {
-    Linking.canOpenURL(url).then(supported => {
-      if (supported) {
-        Linking.openURL(url);
-      } else {
-        console.log(`Don't know how to open URL: ${url}`);
-      }
-    });
-  };
-
-  const renderArticleItem = ({ item }) => {
+  if (!isLoadingComplete && !props.skipLoadingScreen) {
     return (
-      <Card title={item.title} image={{ uri: item.urlToImage }}>
-        <View style={styles.row}>
-          <Text style={styles.label}>Source</Text>
-          <Text style={styles.info}>{item.source.name}</Text>
-        </View>
-        <Text style={{ marginBottom: 10 }}>{item.content}</Text>
-        <View style={styles.row}>
-          <Text style={styles.label}>Published</Text>
-          <Text style={styles.info}>
-            {moment(item.publishedAt).format("LLL")}
-          </Text>
-        </View>
-        <Button
-          icon={<Icon />}
-          title="Read more"
-          backgroundColor="#03A9F4"
-          onPress={() => onPress(item.url)}
-        />
-      </Card>
-    );
-  };
-
-  if (loading) {
-    return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" loading={loading} />
-      </View>
-    );
-  }
-
-  if (hasErrored) {
-    return (
-      <View style={styles.container}>
-        <Text>Error =(</Text>
-      </View>
-    );
-  }
-
-  return (
-    <View style={styles.container}>
-      <View style={styles.row}>
-        <Text style={styles.label}>Articles Count:</Text>
-        <Text style={styles.info}>{articles.length}</Text>
-      </View>
-      <FlatList
-        data={articles}
-        renderItem={renderArticleItem}
-        keyExtractor={item => item.title}
-        onEndReached={getNews}
-        onEndReachedThreshold={1}
-        ListFooterComponent={
-          lastPageReached ? (
-            <Text>No more articles</Text>
-          ) : (
-            <ActivityIndicator size="large" loading={loading} />
-          )
-        }
+      <AppLoading
+        startAsync={loadResourcesAsync}
+        onError={handleLoadingError}
+        onFinish={() => handleFinishLoading(setLoadingComplete)}
       />
-    </View>
-  );
+    );
+  } else {
+    return (
+      <View style={styles.container}>
+        {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
+        <AppNavigator />
+      </View>
+    );
+  }
+}
+
+async function loadResourcesAsync() {
+  await Promise.all([
+    Asset.loadAsync([
+      require('./assets/images/robot-dev.png'),
+      require('./assets/images/robot-prod.png'),
+    ]),
+    Font.loadAsync({
+      // This is the font that we are using for our tab bar
+      ...Ionicons.font,
+      // We include SpaceMono because we use it in HomeScreen.js. Feel free to
+      // remove this if you are not using it in your app
+      'space-mono': require('./assets/fonts/SpaceMono-Regular.ttf'),
+    }),
+  ]);
+}
+
+function handleLoadingError(error) {
+  // In this case, you might want to report the error to your error reporting
+  // service, for example Sentry
+  console.warn(error);
+}
+
+function handleFinishLoading(setLoadingComplete) {
+  setLoadingComplete(true);
 }
 
 const styles = StyleSheet.create({
-  containerFlex: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center"
-  },
   container: {
     flex: 1,
-    marginTop: 40,
-    alignItems: "center",
-    backgroundColor: "#fff",
-    justifyContent: "center"
+    backgroundColor: '#fff',
   },
-  header: {
-    height: 30,
-    width: "100%",
-    backgroundColor: "pink"
-  },
-  row: {
-    flexDirection: "row"
-  },
-  label: {
-    fontSize: 16,
-    color: "black",
-    marginRight: 10,
-    fontWeight: "bold"
-  },
-  info: {
-    fontSize: 16,
-    color: "grey"
-  }
 });
