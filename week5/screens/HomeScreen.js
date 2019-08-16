@@ -1,76 +1,138 @@
-import * as WebBrowser from 'expo-web-browser';
-import React from 'react';
+import React, { useState, useEffect } from "react";
 import {
-  Image,
-  Platform,
-  ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
-} from 'react-native';
+  ActivityIndicator,
+  FlatList,
+  Linking
+} from "react-native";
+import moment from "moment";
+import { Card, Button, Icon } from "react-native-elements";
 
-import { MonoText } from '../components/StyledText';
+const filterForUniqueArticles = arr => {
+  const cleaned = [];
+  arr.forEach(itm => {
+    let unique = true;
+    cleaned.forEach(itm2 => {
+      const isEqual = JSON.stringify(itm) === JSON.stringify(itm2);
+      if (isEqual) unique = false;
+    });
+    if (unique) cleaned.push(itm);
+  });
+  return cleaned;
+};
 
 export default function HomeScreen() {
-  return (
-    <View style={styles.container}>
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.contentContainer}>
-        <View style={styles.welcomeContainer}>
-          <Image
-            source={
-              __DEV__
-                ? require('../assets/images/robot-dev.png')
-                : require('../assets/images/robot-prod.png')
-            }
-            style={styles.welcomeImage}
-          />
+  const [loading, setLoading] = useState(true);
+  const [articles, setArticles] = useState([]);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [hasErrored, setHasApiError] = useState(false);
+  const [lastPageReached, setLastPageReached] = useState(false);
+
+  const getNews = async info => {
+    console.warn("getAPI", info ? info.distanceFromEnd : "no", pageNumber);
+
+    if (lastPageReached) return;
+    try {
+      const response = await fetch(
+        `https://newsapi.org/v2/top-headlines?country=us&apiKey=eb379170b18843d3a703032cd43e227d&page=${pageNumber}&pageSize=10`
+      );
+      const jsonData = await response.json();
+      const hasMoreArticles = jsonData.articles.length > 0;
+      if (hasMoreArticles) {
+        const newArticleList = filterForUniqueArticles(
+          articles.concat(jsonData.articles)
+        );
+        setArticles(newArticleList);
+        setPageNumber(pageNumber + 1);
+      } else {
+        setLastPageReached(true);
+      }
+    } catch (error) {
+      setHasApiError(true);
+    }
+    setLoading(false);
+  };
+  useEffect(() => {
+    getNews();
+  }, []);
+  const onPress = url => {
+    Linking.canOpenURL(url).then(supported => {
+      if (supported) {
+        Linking.openURL(url);
+      } else {
+        console.log(`Don't know how to open URL: ${url}`);
+      }
+    });
+  };
+
+  const renderArticleItem = ({ item }) => {
+    return (
+      <Card title={item.title} image={{ uri: item.urlToImage }}>
+        <View style={styles.row}>
+          <Text style={styles.label}>Source</Text>
+          <Text style={styles.info}>{item.source.name}</Text>
         </View>
-
-        <View style={styles.getStartedContainer}>
-          <DevelopmentModeNotice />
-
-          <Text style={styles.getStartedText}>Get started by opening</Text>
-
-          <View
-            style={[styles.codeHighlightContainer, styles.homeScreenFilename]}>
-            <MonoText>screens/HomeScreen.js</MonoText>
-          </View>
-
-          <Text style={styles.getStartedText}>
-            Change this text and your app will automatically reload.
+        <Text style={{ marginBottom: 10 }}>{item.content}</Text>
+        <View style={styles.row}>
+          <Text style={styles.label}>Published</Text>
+          <Text style={styles.info}>
+            {moment(item.publishedAt).format("LLL")}
           </Text>
         </View>
+        <Button
+          icon={<Icon />}
+          title="Read more"
+          backgroundColor="#03A9F4"
+          onPress={() => onPress(item.url)}
+        />
+      </Card>
+    );
+  };
 
-        <View style={styles.helpContainer}>
-          <TouchableOpacity onPress={handleHelpPress} style={styles.helpLink}>
-            <Text style={styles.helpLinkText}>
-              Help, it didn’t automatically reload!
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-
-      <View style={styles.tabBarInfoContainer}>
-        <Text style={styles.tabBarInfoText}>
-          This is a tab bar. You can edit it in:
-        </Text>
-
-        <View
-          style={[styles.codeHighlightContainer, styles.navigationFilename]}>
-          <MonoText style={styles.codeHighlightText}>
-            navigation/MainTabNavigator.js
-          </MonoText>
-        </View>
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" loading={loading} />
       </View>
+    );
+  }
+
+  if (hasErrored) {
+    return (
+      <View style={styles.container}>
+        <Text>Error =(</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.row}>
+        <Text style={styles.label}>Articles Count:</Text>
+        <Text style={styles.info}>{articles.length}</Text>
+      </View>
+      <FlatList
+        data={articles}
+        renderItem={renderArticleItem}
+        keyExtractor={item => item.title}
+        onEndReached={getNews}
+        // onEndReachedThreshold={1}
+        ListFooterComponent={
+          lastPageReached ? (
+            <Text>No more articles</Text>
+          ) : (
+            <ActivityIndicator size="large" loading={loading} />
+          )
+        }
+      />
     </View>
   );
 }
 
 HomeScreen.navigationOptions = {
-  header: null,
+  header: null
 };
 
 function DevelopmentModeNotice() {
@@ -98,101 +160,45 @@ function DevelopmentModeNotice() {
 
 function handleLearnMorePress() {
   WebBrowser.openBrowserAsync(
-    'https://docs.expo.io/versions/latest/workflow/development-mode/'
+    "https://docs.expo.io/versions/latest/workflow/development-mode/"
   );
 }
 
 function handleHelpPress() {
   WebBrowser.openBrowserAsync(
-    'https://docs.expo.io/versions/latest/workflow/up-and-running/#cant-see-your-changes'
+    "https://docs.expo.io/versions/latest/workflow/up-and-running/#cant-see-your-changes"
   );
 }
 
 const styles = StyleSheet.create({
+  containerFlex: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center"
+  },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    marginTop: 40,
+    alignItems: "center",
+    backgroundColor: "#fff",
+    justifyContent: "center"
   },
-  developmentModeText: {
-    marginBottom: 20,
-    color: 'rgba(0,0,0,0.4)',
-    fontSize: 14,
-    lineHeight: 19,
-    textAlign: 'center',
+  header: {
+    height: 30,
+    width: "100%",
+    backgroundColor: "pink"
   },
-  contentContainer: {
-    paddingTop: 30,
+  row: {
+    flexDirection: "row"
   },
-  welcomeContainer: {
-    alignItems: 'center',
-    marginTop: 10,
-    marginBottom: 20,
+  label: {
+    fontSize: 16,
+    color: "black",
+    marginRight: 10,
+    fontWeight: "bold"
   },
-  welcomeImage: {
-    width: 100,
-    height: 80,
-    resizeMode: 'contain',
-    marginTop: 3,
-    marginLeft: -10,
-  },
-  getStartedContainer: {
-    alignItems: 'center',
-    marginHorizontal: 50,
-  },
-  homeScreenFilename: {
-    marginVertical: 7,
-  },
-  codeHighlightText: {
-    color: 'rgba(96,100,109, 0.8)',
-  },
-  codeHighlightContainer: {
-    backgroundColor: 'rgba(0,0,0,0.05)',
-    borderRadius: 3,
-    paddingHorizontal: 4,
-  },
-  getStartedText: {
-    fontSize: 17,
-    color: 'rgba(96,100,109, 1)',
-    lineHeight: 24,
-    textAlign: 'center',
-  },
-  tabBarInfoContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    ...Platform.select({
-      ios: {
-        shadowColor: 'black',
-        shadowOffset: { width: 0, height: -3 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
-      },
-      android: {
-        elevation: 20,
-      },
-    }),
-    alignItems: 'center',
-    backgroundColor: '#fbfbfb',
-    paddingVertical: 20,
-  },
-  tabBarInfoText: {
-    fontSize: 17,
-    color: 'rgba(96,100,109, 1)',
-    textAlign: 'center',
-  },
-  navigationFilename: {
-    marginTop: 5,
-  },
-  helpContainer: {
-    marginTop: 15,
-    alignItems: 'center',
-  },
-  helpLink: {
-    paddingVertical: 15,
-  },
-  helpLinkText: {
-    fontSize: 14,
-    color: '#2e78b7',
-  },
+  info: {
+    fontSize: 16,
+    color: "grey"
+  }
 });
