@@ -4,24 +4,13 @@ import {
   Text,
   View,
   ActivityIndicator,
-  FlatList,
-  Linking
+  FlatList
 } from "react-native";
 import moment from "moment";
 import { Card, Button, Icon } from "react-native-elements";
+import { getTopHeadlines } from "../utils/Api";
 
-const filterForUniqueArticles = arr => {
-  const cleaned = [];
-  arr.forEach(itm => {
-    let unique = true;
-    cleaned.forEach(itm2 => {
-      const isEqual = JSON.stringify(itm) === JSON.stringify(itm2);
-      if (isEqual) unique = false;
-    });
-    if (unique) cleaned.push(itm);
-  });
-  return cleaned;
-};
+import { filterForUniqueArticles, openUrl } from "../utils";
 
 export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
@@ -29,15 +18,13 @@ export default function HomeScreen() {
   const [pageNumber, setPageNumber] = useState(1);
   const [hasErrored, setHasApiError] = useState(false);
   const [lastPageReached, setLastPageReached] = useState(false);
+  const [delayCallApi, setDelayCallApi] = useState(false);
 
-  const getNews = async info => {
-    console.warn("getAPI", info ? info.distanceFromEnd : "no", pageNumber);
-
-    if (lastPageReached) return;
+  const getNews = async () => {
+    if (lastPageReached || delayCallApi) return;
     try {
-      const response = await fetch(
-        `https://newsapi.org/v2/top-headlines?country=us&apiKey=eb379170b18843d3a703032cd43e227d&page=${pageNumber}&pageSize=10`
-      );
+      setDelayCallApi(true);
+      const response = await getTopHeadlines(pageNumber);
       const jsonData = await response.json();
       const hasMoreArticles = jsonData.articles.length > 0;
       if (hasMoreArticles) {
@@ -53,19 +40,13 @@ export default function HomeScreen() {
       setHasApiError(true);
     }
     setLoading(false);
+    setTimeout(() => {
+      setDelayCallApi(false);
+    }, 1000);
   };
   useEffect(() => {
     getNews();
   }, []);
-  const onPress = url => {
-    Linking.canOpenURL(url).then(supported => {
-      if (supported) {
-        Linking.openURL(url);
-      } else {
-        console.log(`Don't know how to open URL: ${url}`);
-      }
-    });
-  };
 
   const renderArticleItem = ({ item }) => {
     return (
@@ -85,7 +66,7 @@ export default function HomeScreen() {
           icon={<Icon />}
           title="Read more"
           backgroundColor="#03A9F4"
-          onPress={() => onPress(item.url)}
+          onPress={() => openUrl(item.url)}
         />
       </Card>
     );
@@ -117,11 +98,13 @@ export default function HomeScreen() {
         data={articles}
         renderItem={renderArticleItem}
         keyExtractor={item => item.title}
+        onEndReachedThreshold={2}
         onEndReached={getNews}
-        // onEndReachedThreshold={1}
         ListFooterComponent={
           lastPageReached ? (
-            <Text>No more articles</Text>
+            <Text style={{ color: "lightgray", textAlign: "center" }}>
+              No more articles
+            </Text>
           ) : (
             <ActivityIndicator size="large" loading={loading} />
           )
@@ -134,41 +117,6 @@ export default function HomeScreen() {
 HomeScreen.navigationOptions = {
   header: null
 };
-
-function DevelopmentModeNotice() {
-  if (__DEV__) {
-    const learnMoreButton = (
-      <Text onPress={handleLearnMorePress} style={styles.helpLinkText}>
-        Learn more
-      </Text>
-    );
-
-    return (
-      <Text style={styles.developmentModeText}>
-        Development mode is enabled: your app will be slower but you can use
-        useful development tools. {learnMoreButton}
-      </Text>
-    );
-  } else {
-    return (
-      <Text style={styles.developmentModeText}>
-        You are not in development mode: your app will run at full speed.
-      </Text>
-    );
-  }
-}
-
-function handleLearnMorePress() {
-  WebBrowser.openBrowserAsync(
-    "https://docs.expo.io/versions/latest/workflow/development-mode/"
-  );
-}
-
-function handleHelpPress() {
-  WebBrowser.openBrowserAsync(
-    "https://docs.expo.io/versions/latest/workflow/up-and-running/#cant-see-your-changes"
-  );
-}
 
 const styles = StyleSheet.create({
   containerFlex: {

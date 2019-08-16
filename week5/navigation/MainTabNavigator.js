@@ -1,78 +1,90 @@
-import React from 'react';
-import { Platform } from 'react-native';
-import { createStackNavigator, createBottomTabNavigator } from 'react-navigation';
+import React from "react";
+import { Platform } from "react-native";
+import {
+  createStackNavigator,
+  createBottomTabNavigator
+} from "react-navigation";
 
-import TabBarIcon from '../components/TabBarIcon';
-import HomeScreen from '../screens/HomeScreen';
-import LinksScreen from '../screens/LinksScreen';
-import SettingsScreen from '../screens/SettingsScreen';
+import TabBarIcon from "../components/TabBarIcon";
+import HomeScreen from "../screens/HomeScreen";
+import SearchScreen from "../screens/SearchScreen";
+import DiscoveryScreen from "../screens/DiscoveryScreen";
+import PublisherScreen from "../screens/PublisherScreen";
 
 const config = Platform.select({
-  web: { headerMode: 'screen' },
-  default: {},
+  web: { headerMode: "screen" },
+  default: {}
 });
 
 const HomeStack = createStackNavigator(
   {
-    Home: HomeScreen,
+    Home: HomeScreen
   },
   config
 );
 
 HomeStack.navigationOptions = {
-  tabBarLabel: 'Home',
+  tabBarLabel: "Top Headlines",
   tabBarIcon: ({ focused }) => (
     <TabBarIcon
       focused={focused}
-      name={
-        Platform.OS === 'ios'
-          ? `ios-information-circle${focused ? '' : '-outline'}`
-          : 'md-information-circle'
-      }
+      name={Platform.OS === "ios" ? "ios-globe" : "md-globe"}
     />
-  ),
+  )
 };
 
-HomeStack.path = '';
+HomeStack.path = "";
 
-const LinksStack = createStackNavigator(
+const SearchStack = createStackNavigator(
   {
-    Links: LinksScreen,
+    Search: SearchScreen
   },
   config
 );
 
-LinksStack.navigationOptions = {
-  tabBarLabel: 'Links',
+SearchStack.navigationOptions = {
+  tabBarLabel: "Search",
   tabBarIcon: ({ focused }) => (
-    <TabBarIcon focused={focused} name={Platform.OS === 'ios' ? 'ios-link' : 'md-link'} />
-  ),
+    <TabBarIcon
+      focused={focused}
+      name={Platform.OS === "ios" ? "ios-search" : "md-search"}
+    />
+  )
 };
 
-LinksStack.path = '';
+SearchStack.path = "";
 
-const SettingsStack = createStackNavigator(
+const DiscoveryStack = createStackNavigator(
   {
-    Settings: SettingsScreen,
+    Discovery: DiscoveryScreen,
+    Publisher: PublisherScreen
   },
   config
 );
 
-SettingsStack.navigationOptions = {
-  tabBarLabel: 'Settings',
+DiscoveryStack.navigationOptions = {
+  tabBarLabel: "Discovery",
   tabBarIcon: ({ focused }) => (
-    <TabBarIcon focused={focused} name={Platform.OS === 'ios' ? 'ios-options' : 'md-options'} />
-  ),
+    <TabBarIcon
+      focused={focused}
+      name={Platform.OS === "ios" ? "ios-albums" : "md-albums"}
+    />
+  )
 };
 
-SettingsStack.path = '';
+DiscoveryStack.path = "";
 
-const tabNavigator = createBottomTabNavigator({
-  HomeStack,
-  LinksStack,
-  SettingsStack,
-});
+const tabNavigator = createBottomTabNavigator(
+  {
+    HomeStack,
+    SearchStack,
+    DiscoveryStack
+  },
+  {
+    initialRouteName: "DiscoveryStack"
+  }
+);
 
-tabNavigator.path = '';
+tabNavigator.path = "";
 
 export default tabNavigator;
