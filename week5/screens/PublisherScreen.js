@@ -9,8 +9,8 @@ import {
   TouchableOpacity
 } from "react-native";
 import { getPublisher } from "../utils/Api";
-import moment from "moment";
-import { Card, Button, Icon } from "react-native-elements";
+
+import { renderArticleItem } from "../utils";
 
 import { filterForUniqueArticles, openUrl } from "../utils";
 
@@ -39,26 +39,6 @@ export default function SettingsScreen(props) {
   useEffect(() => {
     getData();
   }, []);
-
-  const renderArticleItem = ({ item }) => {
-    return (
-      <Card title={item.title} image={{ uri: item.urlToImage }}>
-        <Text style={{ marginBottom: 10 }}>{item.content}</Text>
-        <View style={styles.row}>
-          <Text style={styles.label}>Published</Text>
-          <Text style={styles.info}>
-            {moment(item.publishedAt).format("LLL")}
-          </Text>
-        </View>
-        <Button
-          icon={<Icon />}
-          title="Read more"
-          backgroundColor="#03A9F4"
-          onPress={() => openUrl(item.url)}
-        />
-      </Card>
-    );
-  };
 
   if (loading) {
     return (
@@ -108,7 +88,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "white"
   },
-  text: { marginBottom: 10, marginHorizontal: 15 },
+  text: {
+    textAlign: "center",
+    marginBottom: 10,
+    marginHorizontal: 15
+  },
   title: {
     marginBottom: 10,
     fontSize: 17,
@@ -140,5 +124,10 @@ const styles = StyleSheet.create({
 
 SettingsScreen.navigationOptions = ({ navigation }) => ({
   title: navigation.getParam("publisher", {}).name,
-  titleStyle: { fontSize: 20, fontWeight: "bold", marginBottom: 20 }
+  titleStyle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 20,
+    textAlign: "center"
+  }
 });

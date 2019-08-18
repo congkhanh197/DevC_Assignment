@@ -10,7 +10,7 @@ import moment from "moment";
 import { Card, Button, Icon } from "react-native-elements";
 import { getTopHeadlines } from "../utils/Api";
 
-import { filterForUniqueArticles, openUrl } from "../utils";
+import { filterForUniqueArticles, openUrl, renderArticleItem } from "../utils";
 
 export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
@@ -47,30 +47,6 @@ export default function HomeScreen() {
   useEffect(() => {
     getNews();
   }, []);
-
-  const renderArticleItem = ({ item }) => {
-    return (
-      <Card title={item.title} image={{ uri: item.urlToImage }}>
-        <View style={styles.row}>
-          <Text style={styles.label}>Source</Text>
-          <Text style={styles.info}>{item.source.name}</Text>
-        </View>
-        <Text style={{ marginBottom: 10 }}>{item.content}</Text>
-        <View style={styles.row}>
-          <Text style={styles.label}>Published</Text>
-          <Text style={styles.info}>
-            {moment(item.publishedAt).format("LLL")}
-          </Text>
-        </View>
-        <Button
-          icon={<Icon />}
-          title="Read more"
-          backgroundColor="#03A9F4"
-          onPress={() => openUrl(item.url)}
-        />
-      </Card>
-    );
-  };
 
   if (loading) {
     return (

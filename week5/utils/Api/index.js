@@ -16,3 +16,11 @@ export const getPublisher = (id, pageNumber) => {
     baseUrl + `/everything?sources=${id}&apiKey=${API_KEY}&page=${pageNumber}`
   );
 };
+
+export const getArticleSearch = (text, pageNumber) => {
+  const encode = encodeURI(text);
+  return fetch(
+    baseUrl +
+      `/everything?qInTitle=${encode}&language=en&sortBy=relevancy&apiKey=${API_KEY}&page=${pageNumber}&pageSize=50`
+  );
+};

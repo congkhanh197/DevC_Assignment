@@ -74,16 +74,11 @@ DiscoveryStack.navigationOptions = {
 
 DiscoveryStack.path = "";
 
-const tabNavigator = createBottomTabNavigator(
-  {
-    HomeStack,
-    SearchStack,
-    DiscoveryStack
-  },
-  {
-    initialRouteName: "DiscoveryStack"
-  }
-);
+const tabNavigator = createBottomTabNavigator({
+  HomeStack,
+  SearchStack,
+  DiscoveryStack
+});
 
 tabNavigator.path = "";
 
