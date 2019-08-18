@@ -16,7 +16,7 @@ import { filterForUniqueArticles, openUrl } from "../utils";
 
 export default function SettingsScreen(props) {
   const [loading, setLoading] = useState(true);
-  const [totalArticle, setTotalArticle] = useState({});
+  const [totalArticle, setTotalArticle] = useState(0);
   const [articles, setArticles] = useState([]);
   const [hasErrored, setHasApiError] = useState(false);
   const publisher = props.navigation.getParam("publisher", {});
@@ -40,19 +40,6 @@ export default function SettingsScreen(props) {
     getData();
   }, []);
 
-  if (loading) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.text}>{publisher.description}</Text>
-        <Text style={styles.text}>{publisher.url}</Text>
-        <Text>{"Total publishers:" + totalArticle}</Text>
-        <View style={styles.container}>
-          <ActivityIndicator size="large" loading={loading} />
-        </View>
-      </View>
-    );
-  }
-
   if (!publisher || hasErrored) {
     return (
       <View style={styles.container}>
@@ -66,16 +53,22 @@ export default function SettingsScreen(props) {
       <Text style={styles.text}>{publisher.description}</Text>
       <Text style={styles.text}>{publisher.url}</Text>
       <Text>Total publishers: {totalArticle}</Text>
-      <FlatList
-        data={articles}
-        renderItem={renderArticleItem}
-        keyExtractor={item => item.title}
-        onEndReachedThreshold={2}
-        onEndReached={getData}
-        ListFooterComponent={
+      {loading ? (
+        <View style={{ flex: 1 }}>
           <ActivityIndicator size="large" loading={loading} />
-        }
-      />
+        </View>
+      ) : (
+        <FlatList
+          data={articles}
+          renderItem={renderArticleItem}
+          keyExtractor={item => item.title}
+          onEndReachedThreshold={2}
+          onEndReached={getData}
+          ListFooterComponent={
+            <ActivityIndicator size="large" loading={loading} />
+          }
+        />
+      )}
     </View>
   );
 }
